@@ -1,0 +1,3 @@
+## This is because we are using a custom target and the core library is not net compiled for this target
+[unstable]
+build-std = ["core", "compiler_builtins"]

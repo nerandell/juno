@@ -1,3 +1,6 @@
+use core::fmt::Write;
+use volatile::Volatile;
+
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
@@ -42,13 +45,20 @@ const BUFFER_WIDTH: usize = 80;
 
 #[repr(transparent)]
 struct PrintBuffer {
-    chars: [[PrintChar; BUFFER_WIDTH]; BUFFER_HEIGHT],
+    chars: [[Volatile<PrintChar>; BUFFER_WIDTH]; BUFFER_HEIGHT],
 }
 
 pub struct VGABufferWriter {
     current_column: usize,
     color_code: ColorCode,
     buffer: &'static mut PrintBuffer,
+}
+
+impl Write for VGABufferWriter {
+    fn write_str(&mut self, s: &str) -> core::fmt::Result {
+        self.write_string(s);
+        Ok(())
+    }
 }
 
 impl VGABufferWriter {
@@ -72,10 +82,10 @@ impl VGABufferWriter {
                 let col = self.current_column;
                 let color_code = self.color_code;
 
-                self.buffer.chars[row][col] = PrintChar {
+                self.buffer.chars[row][col].write(PrintChar {
                     ascii_character: byte,
                     color_code,
-                };
+                });
 
                 self.current_column += 1;
             }
@@ -93,19 +103,31 @@ impl VGABufferWriter {
         }
     }
 
-    fn new_line(&mut self) -> ! {
-        loop {}
+    fn new_line(&mut self) {
+        for row in 1..BUFFER_HEIGHT {
+            for col in 0..BUFFER_WIDTH {
+                let char = self.buffer.chars[row][col].read();
+                self.buffer.chars[row - 1][col].write(char);
+            }
+        }
+
+        self.clear_row(BUFFER_HEIGHT - 1);
+        self.current_column = 0;
+    }
+
+    fn clear_row(&mut self, row: usize) {
+        for col in 0..BUFFER_WIDTH {
+            self.buffer.chars[row][col].write(PrintChar {
+                ascii_character: b' ',
+                color_code: self.color_code,
+            })
+        }
     }
 }
 
 pub fn print_something() {
-    let mut writer = VGABufferWriter {
-        current_column: 0,
-        color_code: ColorCode::new(Color::Magenta, Color::Yellow),
-        buffer: unsafe { &mut *(0xb8000 as *mut PrintBuffer) },
-    };
-
-    writer.write_byte(b'H');
-    writer.write_string("ello ");
-    writer.write_string("Wörld!");
+    let mut writer = VGABufferWriter::new(
+        ColorCode::new(Color::Yellow, Color::Black)
+    );
+    write!(writer, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
 }

@@ -4,8 +4,6 @@ mod vga_buffer;
 
 use core::panic::PanicInfo;
 
-static HELLO: &[u8] = b"HELLO WORLD";
-
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     loop {}

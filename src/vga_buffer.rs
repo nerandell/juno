@@ -1,5 +1,7 @@
 use core::fmt::Write;
 use volatile::Volatile;
+use lazy_static::lazy_static;
+use spin::Mutex;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -46,6 +48,12 @@ const BUFFER_WIDTH: usize = 80;
 #[repr(transparent)]
 struct PrintBuffer {
     chars: [[Volatile<PrintChar>; BUFFER_WIDTH]; BUFFER_HEIGHT],
+}
+
+lazy_static! {
+    pub static ref WRITER: Mutex<VGABufferWriter> = Mutex::new(VGABufferWriter::new(
+        ColorCode::new(Color::Yellow, Color::Black)
+    ));
 }
 
 pub struct VGABufferWriter {
@@ -123,11 +131,4 @@ impl VGABufferWriter {
             })
         }
     }
-}
-
-pub fn print_something() {
-    let mut writer = VGABufferWriter::new(
-        ColorCode::new(Color::Yellow, Color::Black)
-    );
-    write!(writer, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
 }

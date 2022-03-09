@@ -3,13 +3,14 @@
 
 use core::panic::PanicInfo;
 
-static HELLO : &[u8] = b"HELLO WORLD";
+static HELLO: &[u8] = b"HELLO WORLD";
 
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     loop {}
 }
 
+#[no_mangle]
 pub extern "C" fn _start() -> ! {
     // VGA Buffer is located at 0xB8000
     let vga_buffer = 0xb8000 as *mut u8;

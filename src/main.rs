@@ -10,6 +10,7 @@
 #![reexport_test_harness_main = "test_main"]
 
 mod vga_buffer;
+mod serial;
 
 use core::panic::PanicInfo;
 use x86_64::instructions::port::Port;
@@ -21,9 +22,19 @@ enum QemuExitCode {
     Failure = 0x11
 }
 
+#[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
+    loop {}
+}
+
+#[cfg(test)]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    serial_println!("Test failed!");
+    serial_println!("Error info: {:?}", info);
+    exit_qemu(QemuExitCode::Failure);
     loop {}
 }
 
@@ -38,7 +49,7 @@ fn exit_qemu(exit_code: QemuExitCode) {
 // Custom test runner
 #[cfg(test)]
 fn test_runner(tests: &[&dyn Fn()]) {
-    println!("Running {} tests", tests.len());
+    serial_println!("Running {} tests", tests.len());
     for test in tests {
         test();
     }
@@ -48,9 +59,9 @@ fn test_runner(tests: &[&dyn Fn()]) {
 
 #[test_case]
 fn dummy_assertion() {
-    println!("Dummy assertion test");
-    assert_eq!(1, 1);
-    println!("[OK]");
+    serial_println!("Dummy assertion test");
+    assert_eq!(1, 2);
+    serial_println!("[OK]");
 }
 
 #[no_mangle]

@@ -148,3 +148,30 @@ macro_rules! println {
 macro_rules! print {
     ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
 }
+
+#[test_case]
+fn test_simple_print() {
+    println!("Simple Print");
+}
+
+#[test_case]
+fn test_print_with_format_args() {
+    println!("Print with args: {}", 42);
+}
+
+#[test_case]
+fn test_many_prints() {
+    for i in 1..200 {
+        println!("Printing iteration: {}", i);
+    }
+}
+
+#[test_case]
+fn test_buffer_output() {
+    let s = "Hello Juno!";
+    println!("{}", s);
+    for (i, c) in s.chars().enumerate() {
+        let char_in_buffer = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i].read();
+        assert_eq!(char::from(char_in_buffer.ascii_character), c);
+    }
+}

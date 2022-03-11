@@ -19,7 +19,9 @@ test-args = [
     # To exit QEMU
     "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04",
     # To direct output to host machine stdio
-    "-serial", "stdio"
+    "-serial", "stdio",
+    # QEMU window not required when running tests
+    "-display", "none"
 ]
 ## Map the succcess exit code defined in main.rs
 ## to the code considered as succcess by QEMU

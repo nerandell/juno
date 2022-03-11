@@ -13,8 +13,8 @@
 use core::panic::PanicInfo;
 use x86_64::instructions::port::Port;
 
-mod serial;
-mod vga_buffer;
+pub mod serial;
+pub mod vga_buffer;
 
 #[derive(Debug)]
 #[repr(u32)]

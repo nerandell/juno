@@ -26,3 +26,7 @@ test-args = [
 ## Map the succcess exit code defined in main.rs
 ## to the code considered as succcess by QEMU
 test-success-exit-code = 33
+
+[[test]]
+name = "should_panic"
+harness = false

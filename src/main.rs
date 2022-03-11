@@ -3,7 +3,7 @@
 
 // Define custom test framework
 #![feature(custom_test_frameworks)]
-#![test_runner(crate::test_runner)]
+#![test_runner(juno::test_runner)]
 // Override the function name that test runner creates to
 // execute since it cannot be main because of the no_main
 // attribute
@@ -13,26 +13,6 @@ mod vga_buffer;
 mod serial;
 
 use core::panic::PanicInfo;
-use x86_64::instructions::port::Port;
-
-#[derive(Debug)]
-#[repr(u32)]
-enum QemuExitCode {
-    Success = 0x10,
-    Failure = 0x11,
-}
-
-pub trait DebugTest {
-    fn run(&self);
-}
-
-impl <T> DebugTest for T where T: Fn() {
-    fn run(&self) {
-        serial_print!("Running test {} ", core::any::type_name::<T>());
-        self();
-        serial_println!("[OK]")
-    }
-}
 
 #[cfg(not(test))]
 #[panic_handler]
@@ -44,34 +24,7 @@ fn panic(info: &PanicInfo) -> ! {
 #[cfg(test)]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    serial_println!("Test failed!");
-    serial_println!("Error info: {:?}", info);
-    exit_qemu(QemuExitCode::Failure);
-    loop {}
-}
-
-// Write to Port mapped IO to exit QEMU.
-fn exit_qemu(exit_code: QemuExitCode) {
-    unsafe {
-        let mut port = Port::new(0xf4);
-        port.write(exit_code as u32);
-    }
-}
-
-// Custom test runner
-#[cfg(test)]
-fn test_runner(tests: &[&dyn DebugTest]) {
-    serial_println!("Running {} tests", tests.len());
-    for test in tests {
-        test.run();
-    }
-
-    exit_qemu(QemuExitCode::Success);
-}
-
-#[test_case]
-fn dummy_assertion() {
-    assert_eq!(1, 1);
+    juno::panic_handler(info)
 }
 
 #[no_mangle]
@@ -82,5 +35,10 @@ pub extern "C" fn _start() -> ! {
     test_main();
 
     loop {}
+}
+
+#[test_case]
+fn dummy_assertion() {
+    assert_eq!(1, 1);
 }
 

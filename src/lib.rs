@@ -18,7 +18,7 @@ pub mod vga_buffer;
 
 #[derive(Debug)]
 #[repr(u32)]
-enum QemuExitCode {
+pub enum QemuExitCode {
     Success = 0x10,
     Failure = 0x11,
 }
@@ -36,7 +36,7 @@ impl<T> DebugTest for T where T: Fn() {
 }
 
 // Write to Port mapped IO to exit QEMU.
-fn exit_qemu(exit_code: QemuExitCode) {
+pub fn exit_qemu(exit_code: QemuExitCode) {
     unsafe {
         let mut port = Port::new(0xf4);
         port.write(exit_code as u32);

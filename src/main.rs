@@ -4,6 +4,7 @@
 // Define custom test framework
 #![feature(custom_test_frameworks)]
 #![test_runner(crate::test_runner)]
+#![reexport_test_harness_main = "test_main"]
 
 mod vga_buffer;
 
@@ -15,12 +16,6 @@ fn panic(info: &PanicInfo) -> ! {
     loop {}
 }
 
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
-    println!("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
-    loop {}
-}
-
 // Custom test runner
 #[cfg(test)]
 fn test_runner(tests: &[&dyn Fn()]) {
@@ -29,3 +24,21 @@ fn test_runner(tests: &[&dyn Fn()]) {
         test();
     }
 }
+
+#[test_case]
+fn dummy_assertion() {
+    println!("Dummy assertion test");
+    assert_eq!(1, 2);
+    println!("[OK]");
+}
+
+#[no_mangle]
+pub extern "C" fn _start() -> ! {
+    println!("Hello from Juno");
+
+    #[cfg(test)]
+    test_main();
+
+    loop {}
+}
+

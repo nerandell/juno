@@ -19,7 +19,19 @@ use x86_64::instructions::port::Port;
 #[repr(u32)]
 enum QemuExitCode {
     Success = 0x10,
-    Failure = 0x11
+    Failure = 0x11,
+}
+
+pub trait DebugTest {
+    fn run(&self);
+}
+
+impl <T> DebugTest for T where T: Fn() {
+    fn run(&self) {
+        serial_print!("Running test {} ", core::any::type_name::<T>());
+        self();
+        serial_println!("[OK]")
+    }
 }
 
 #[cfg(not(test))]
@@ -48,10 +60,10 @@ fn exit_qemu(exit_code: QemuExitCode) {
 
 // Custom test runner
 #[cfg(test)]
-fn test_runner(tests: &[&dyn Fn()]) {
+fn test_runner(tests: &[&dyn DebugTest]) {
     serial_println!("Running {} tests", tests.len());
     for test in tests {
-        test();
+        test.run();
     }
 
     exit_qemu(QemuExitCode::Success);
@@ -59,9 +71,7 @@ fn test_runner(tests: &[&dyn Fn()]) {
 
 #[test_case]
 fn dummy_assertion() {
-    serial_println!("Dummy assertion test");
-    assert_eq!(1, 2);
-    serial_println!("[OK]");
+    assert_eq!(1, 1);
 }
 
 #[no_mangle]

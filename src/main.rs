@@ -14,6 +14,7 @@ mod serial;
 
 use core::panic::PanicInfo;
 
+
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
@@ -30,6 +31,9 @@ fn panic(info: &PanicInfo) -> ! {
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     println!("Hello from Juno");
+
+    juno::init();
+    x86_64::instructions::interrupts::int3();
 
     #[cfg(test)]
     test_main();

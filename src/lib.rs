@@ -9,12 +9,15 @@
 // execute since it cannot be main because of the no_main
 // attribute
 #![reexport_test_harness_main = "test_main"]
+// Allow x86 interrupts
+#![feature(abi_x86_interrupt)]
 
 use core::panic::PanicInfo;
 use x86_64::instructions::port::Port;
 
 pub mod serial;
 pub mod vga_buffer;
+pub mod interrupts;
 
 #[derive(Debug)]
 #[repr(u32)]
@@ -74,5 +77,7 @@ pub fn panic(info: &PanicInfo) -> ! {
     panic_handler(info);
 }
 
-
+pub fn init() {
+    interrupts::init_interrupts();
+}
 

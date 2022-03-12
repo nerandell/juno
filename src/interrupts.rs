@@ -17,3 +17,9 @@ extern "x86-interrupt" fn breakpoint_handler(frame: InterruptStackFrame) {
 pub fn init_interrupts() {
     IDT.load();
 }
+
+#[test_case]
+pub fn test_interrupts() {
+    x86_64::instructions::interrupts::int3();
+}
+

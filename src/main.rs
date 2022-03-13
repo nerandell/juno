@@ -33,7 +33,14 @@ pub extern "C" fn _start() -> ! {
     println!("Hello from Juno");
 
     juno::init();
+
+    // Throw a breakpoint interrupt
     x86_64::instructions::interrupts::int3();
+
+    // Trigger a page fault
+    unsafe {
+        *(0xdeadbeef as *mut u64) = 42;
+    };
 
     #[cfg(test)]
     test_main();

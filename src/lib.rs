@@ -47,7 +47,6 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
 }
 
 pub fn panic_handler(info: &PanicInfo) -> ! {
-    serial_println!("Test failed!");
     serial_println!("Error info: {:?}", info);
     exit_qemu(QemuExitCode::Failure);
     loop {}

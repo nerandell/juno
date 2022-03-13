@@ -18,6 +18,7 @@ use x86_64::instructions::port::Port;
 pub mod serial;
 pub mod vga_buffer;
 pub mod interrupts;
+pub mod gdt;
 
 #[derive(Debug)]
 #[repr(u32)]
@@ -79,5 +80,6 @@ pub fn panic(info: &PanicInfo) -> ! {
 
 pub fn init() {
     interrupts::init_interrupts();
+    gdt::init_gdt();
 }
 

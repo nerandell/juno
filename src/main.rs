@@ -37,10 +37,10 @@ pub extern "C" fn _start() -> ! {
     // Throw a breakpoint interrupt
     x86_64::instructions::interrupts::int3();
 
-    // Trigger a page fault
-    unsafe {
-        *(0xdeadbeef as *mut u64) = 42;
-    };
+    fn stack_overflow() {
+        stack_overflow();
+    }
+    stack_overflow();
 
     #[cfg(test)]
     test_main();
